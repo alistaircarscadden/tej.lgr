@@ -87,44 +87,44 @@ just_copy = [
 ]
 
 
-def jej(retropath, edjpath, apply_transparency, jejpath):
+def cedj(retropath, edjpath, apply_transparency, cedjpath):
     retro = Image.open(retropath)
     edj = Image.open(edjpath)
-    jej = Image.new(mode='P', size=(retro.width, retro.height))
+    cedj = Image.new(mode='P', size=(retro.width, retro.height))
 
-    for x in range(jej.width):
-        for y in range(jej.height):
+    for x in range(cedj.width):
+        for y in range(cedj.height):
             edjpx = edj.getpixel((x, y))
             retropx = retro.getpixel((x, y))
 
             if(apply_transparency):
 
                 if(edjpx == 209):
-                    jejpx = edjpx
+                    cedjpx = edjpx
                 elif(edjpx == 255):
-                    jejpx = 0
+                    cedjpx = 0
                 else:
-                    jejpx = retropx
+                    cedjpx = retropx
             else:
-                jejpx = retropx
+                cedjpx = retropx
 
-            jej.putpixel((x, y), jejpx)
+            cedj.putpixel((x, y), cedjpx)
 
-    jej.putpalette(retro.getpalette())
-    jej.save(jejpath)
+    cedj.putpalette(retro.getpalette())
+    cedj.save(cedjpath)
 
 
 # Make directories
 try:
-    os.mkdir('jej/QUPDOWN')
-    os.mkdir('jej')
+    os.mkdir('cedj/QUPDOWN')
+    os.mkdir('cedj')
 except FileExistsError:
     pass
 
 # Make edge images
 for image in images:
-    jej('retro/' + image[0], 'edj/' + image[0], image[1], 'jej/' + image[0])
+    cedj('retro/' + image[0], 'edj/' + image[0], image[1], 'cedj/' + image[0])
 
 # Copy masks and .txt
 for copy in just_copy:
-    shutil.copy('default/' + copy, 'jej/' + copy)
+    shutil.copy('default/' + copy, 'cedj/' + copy)
