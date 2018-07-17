@@ -1,6 +1,7 @@
 import cv2
 import os
 import shutil
+import colorsys
 from PIL import Image
 
 images = [['barrel.bmp', True],
@@ -86,82 +87,34 @@ just_copy = [
     'lgr.txt',
 ]
 
-def luminance(rgb):
-    lum = int(0.2126*rgb[0] + 0.7152*rgb[1] + 0.0722*rgb[2])
-    if(lum == 0):
-        lum = 1
-    return lum
+def change_value(rgb, value):
+    # Adds value to colour's existing value
+    col = colorsys.rgb_to_hsv(rgb[0] / 256.0, rgb[1] / 256.0, rgb[2] / 256.0)
+    col[2] += value / 256.0
+    if(col[2] < 0):
+        col[2] = 0
+    if(col[2] > 1):
+        col[2] = 1
+    col = colorsys.hsv_to_rgb(col[0], col[1], col[2])
+    return [col[0] * 256.0, col[1] * 256.0, col[2] * 256.0]
 
-def rgb_from_palette_index(index, palette):
-    index *= 3
-    return (palette[index], palette[index+1], palette[index+2])
+def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath):
+    _cedj = Image.open(cedjpath)
+    cedj = _cedj.convert(mode='RGB', palette=_cedj.getpalette())
+    dajrk = Image.open(dajrkpath) # Transparent 0, lum 63 127 191 255
 
-def greyscale_palette():
-    # m is a list of 256*3 RGB colours,
-    # 255, 0, 0,  0, 0, 0,  2, 2, 2,  3, 3, 3 ... 255, 255, 255
-    # first three will be transparency in elma (red)
-    # then the next 255 will be greyscale (except 1, 1, 1)
-    m = []
-    m.extend([255, 0, 0])
-    m.extend([0, 0, 0])
-    for x in range(2, 256):
-        m.extend([x, x, x])
-    return m
+    dejtaijl = Image.new(mode='RGB', size=(cedj.width, cedj.height))
 
-def dajrk(defaultpath, dajrkpath, apply_transparency):
-    default = Image.open(defaultpath)
-    default_palette = default.getpalette()
+    for x in range(dejtaijl.width):
+        for y in range(dejtaijl.height):
+            dajrkpx = dajrk.getpixel((x, y))
+            cedjpx = cedj.getpixel((x, y))
+            dejtaijlpx = None
+
+            print(cedjpx)
+                    
+                
     
-    dajrk = Image.new(mode='P', size=(default.width, default.height))
-    dajrk.putpalette(greyscale_palette())
-    
-    transparency_color = default.getpixel((0, 0))
-
-    luminances = []
-    for x in range(default.width):
-        for y in range(default.height):
-            defaultpx = default.getpixel((x, y))
-            if(apply_transparency and defaultpx == transparency_color):
-                pass
-            else:
-                lum = luminance(rgb_from_palette_index(defaultpx, default_palette))
-                luminances.append(lum)
-    luminances.sort()
-
-    # Luminances bands
-    q1 = luminances[len(luminances) // 4]
-    q2 = luminances[len(luminances) // 4 * 2]
-    q3 = luminances[len(luminances) // 4 * 3]
-    
-    for x in range(default.width):
-        for y in range(default.height):
-            defaultpx = default.getpixel((x, y))
-            dajrkpx = 0
-            if(apply_transparency and defaultpx == transparency_color):
-                pass
-            else:
-                defaultpx_rgb = rgb_from_palette_index(defaultpx, default_palette)
-                lum = luminance(defaultpx_rgb)
-
-                if(q1 > lum):
-                    dajrkpx = 63
-                elif(q2 > lum):
-                    dajrkpx = 127
-                elif(q3 > lum):
-                    dajrkpx = 191
-                else:
-                    dajrkpx = 255
-            dajrk.putpixel((x, y), dajrkpx)
-
-    dajrk.save(dajrkpath)
-
-for img in images:
-    dajrk('default/' + img[0], 'dajrk/' + img[0], img[1])
-    
-for cpy in just_copy:
-    shutil.copy('default/' + cpy, 'dajrk/' + cpy)
-
-
 
 
 
