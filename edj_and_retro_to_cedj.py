@@ -98,7 +98,6 @@ def cedj(retropath, edjpath, apply_transparency, cedjpath):
             retropx = retro.getpixel((x, y))
 
             if(apply_transparency):
-
                 if(edjpx == 209):
                     cedjpx = edjpx
                 elif(edjpx == 255):

@@ -97,8 +97,34 @@ def edge_from_image(path, topath, apply_transparency):
         transparency_color = image.getpixel((0, 0))
         for x in range(image.width):
             for y in range(image.height):
-                if(image.getpixel((x, y)) == transparency_color and edge_image.getpixel((x, y)) != 255):
+                # Top left pixel must be orange
+                # Any pixel that is transparent in the original
+                # and black in the edge version must be transparent
+                # white pixels (edges) stay.
+                if((x, y) == (0, 0) or
+                   image.getpixel((x, y)) == transparency_color and 
+                   edge_image.getpixel((x, y)) != 255):
                     edge_image.putpixel((x, y), 209)
+
+        for x in range(image.width):
+            for y in range(image.height):
+                # If a pixel is black and has transparency beside
+                # it, the edge detection failed to detect this edge
+                # and we will force it to be white
+                # (this happens, for example, in tree3 where the bg
+                # is blue, and the top of the tree is light green)
+                if(edge_image.getpixel((x, y)) == 0):
+                    any_transparent = False
+                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                    for x_off, y_off in directions:
+                        _x_, _y_ = x + x_off, y + y_off
+                        try:
+                            if(edge_image.getpixel((_x_, _y_)) == 209):
+                                any_transparent = True
+                        except IndexError:
+                            pass
+                    if(any_transparent):
+                        edge_image.putpixel((x, y), 255)
 
     edge_image.putpalette(image.getpalette())
     edge_image.save(topath)
