@@ -3,7 +3,8 @@ import os
 import shutil
 from PIL import Image
 
-edjify = [['barrel.bmp', True],
+edjify = [
+    ['barrel.bmp', True],
     ['brick.bmp', False],
     ['bridge.bmp', True],
     ['bush1.bmp', True],
@@ -16,7 +17,6 @@ edjify = [['barrel.bmp', True],
     ['hang.bmp', True],
     ['log1.bmp', True],
     ['log2.bmp', True],
-    
     ['mushroom.bmp', True],
     ['plantain.bmp', True],
     ['Q1BIKE.bmp', True],
@@ -77,7 +77,8 @@ edjify = [['barrel.bmp', True],
     ['QUPDOWN/QUP_14.bmp', True],
     ['QUPDOWN/QUP_18.bmp', True],
     ['QUPDOWN/QUP_5.bmp', True],
-    ['QUPDOWN/QUP_9.bmp', True]]
+    ['QUPDOWN/QUP_9.bmp', True]
+]
 
 just_copy = [
     'maskbig.bmp',
@@ -85,7 +86,7 @@ just_copy = [
     'masklitt.bmp',
     'masktop.bmp',
     'lgr.txt',
-    ]
+]
 
 def edge_from_image(path, topath, apply_transparency):
     image = Image.open(path)
@@ -96,7 +97,7 @@ def edge_from_image(path, topath, apply_transparency):
         transparency_color = image.getpixel((0, 0))
         for x in range(image.width):
             for y in range(image.height):
-                if(image.getpixel((x, y)) == transparency_color):
+                if(image.getpixel((x, y)) == transparency_color and edge_image.getpixel((x, y)) != 255):
                     edge_image.putpixel((x, y), 209)
 
     edge_image.putpalette(image.getpalette())
