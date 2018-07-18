@@ -2,6 +2,7 @@ import cv2
 import os
 import shutil
 import colorsys
+import numpy
 from PIL import Image
 
 images = [['barrel.bmp', True],
@@ -87,21 +88,46 @@ just_copy = [
     'lgr.txt',
 ]
 
+def palette_img_from_img(path):
+    p = Image.open(path).getpalette()
+    test = Image.new(mode='P', size=(16, 16))
+    test.putpalette(p)
+    for n in range(256):
+        test.putpixel((n % 16, n // 16), n)
+    return test
+
 def change_value(rgb, value):
     # Adds value to colour's existing value
-    col = colorsys.rgb_to_hsv(rgb[0] / 256.0, rgb[1] / 256.0, rgb[2] / 256.0)
+    col = list(colorsys.rgb_to_hsv(rgb[0] / 256.0, rgb[1] / 256.0, rgb[2] / 256.0))
     col[2] += value / 256.0
     if(col[2] < 0):
         col[2] = 0
     if(col[2] > 1):
         col[2] = 1
     col = colorsys.hsv_to_rgb(col[0], col[1], col[2])
-    return [col[0] * 256.0, col[1] * 256.0, col[2] * 256.0]
+    return tuple(map(int, (col[0] * 256.0, col[1] * 256.0, col[2] * 256.0)))
 
-def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath):
+def get_medians(dajrk):
+    lumis = []
+    for x in range(dajrk.width):
+        for y in range(dajrk.height):
+            px = dajrk.getpixel((x, y))
+            if(px != 209):
+                lumis.append(px)
+    lumis.sort()
+    return {
+        'Q1': lumis[len(lumis)//4 * 1],
+        'Q2': lumis[len(lumis)//4 * 2],
+        'Q3': lumis[len(lumis)//4 * 3]
+    }
+def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath, palette):
+    print(dejtaijlpath)
     _cedj = Image.open(cedjpath)
-    cedj = _cedj.convert(mode='RGB', palette=_cedj.getpalette())
-    dajrk = Image.open(dajrkpath) # Transparent 0, lum 63 127 191 255
+    _cedjpal = _cedj.getpalette()
+    cedj = _cedj.convert(mode='RGB')
+    dajrk = Image.open(dajrkpath)
+
+    medians = get_medians(dajrk)
 
     dejtaijl = Image.new(mode='RGB', size=(cedj.width, cedj.height))
 
@@ -109,14 +135,40 @@ def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath):
         for y in range(dejtaijl.height):
             dajrkpx = dajrk.getpixel((x, y))
             cedjpx = cedj.getpixel((x, y))
-            dejtaijlpx = None
+            _cedjpx = _cedj.getpixel((x, y))
 
-            print(cedjpx)
-                    
-                
+            px = None
+            if(_cedjpx == 0):
+                px = (0, 0, 0)
+            elif(dajrkpx < medians['Q1']):
+                px = change_value(cedjpx, -32)
+            else:#(dajrkpx < medians['Q3']):
+                px = cedjpx
+            #else:
+            #    px = change_value(cedjpx, 32)
+
+            dejtaijl.putpixel((x, y), px)
+
+    dejtaijl2 = dejtaijl.quantize(palette=palette)
+
+    if(apply_transparency):
+        for x in range(dejtaijl2.width):
+            for y in range(dejtaijl2.height):
+                if(_cedj.getpixel((x, y)) == 209):
+                    dejtaijl2.putpixel((x, y), 209)
     
+    dejtaijl2.save(dejtaijlpath)
 
+def save(dejtaijlpath, dejtaijl2path):
+    palette = Image.open('default/sedge.bmp').getpalette()
+    dejtaijlpng = Image.open(dejtaijlpath)
+    dej = dejtaijlpng.quantize(palette=palette)
+    dej.save(dejtaijl2path)
 
+palette = palette_img_from_img('cedj/sedge.bmp')
+for img in images:
+    dejtaijl('cedj/' + img[0], 'dajrk/' + img[0], img[1], 'dejtaijl/' + img[0], palette)
 
-
+for cpy in just_copy:
+    shutil.copy('default/' + cpy, 'dejtaijl/' + cpy)
 

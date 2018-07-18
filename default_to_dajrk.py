@@ -1,9 +1,10 @@
 import cv2
 import os
 import shutil
-from PIL import Image
+from PIL import Image, ImageFilter
 
-images = [['barrel.bmp', True],
+images = [
+    ['barrel.bmp', True],
           ['brick.bmp', False],
           ['bridge.bmp', True],
           ['bush1.bmp', True],
@@ -76,7 +77,8 @@ images = [['barrel.bmp', True],
           ['QUPDOWN/QUP_14.bmp', True],
           ['QUPDOWN/QUP_18.bmp', True],
           ['QUPDOWN/QUP_5.bmp', True],
-          ['QUPDOWN/QUP_9.bmp', True]]
+          ['QUPDOWN/QUP_9.bmp', True]
+    ]
 
 just_copy = [
     'maskbig.bmp',
@@ -108,55 +110,47 @@ def greyscale_palette():
         m.extend([x, x, x])
     return m
 
+def contiguous_palette(palette):
+    cont = []
+    for x in range(0, 256*3, 3):
+        cont.append(palette[x])
+    for x in range(1, 256*3, 3):
+        cont.append(palette[x])
+    for x in range(2, 256*3, 3):
+        cont.append(palette[x])
+    print(len(palette))
+    print(len(cont))
+    return cont
+
+GREYSCALE_PALETTE = greyscale_palette()
+
 def dajrk(defaultpath, dajrkpath, apply_transparency):
     default = Image.open(defaultpath)
-    default_palette = default.getpalette()
-    
-    dajrk = Image.new(mode='P', size=(default.width, default.height))
-    dajrk.putpalette(greyscale_palette())
-    
-    transparency_color = default.getpixel((0, 0))
+    greyscale = default.convert(mode='L')
+    greyscale.putpalette(default.getpalette())
 
-    luminances = []
-    for x in range(default.width):
-        for y in range(default.height):
-            defaultpx = default.getpixel((x, y))
-            if(apply_transparency and defaultpx == transparency_color):
-                pass
-            else:
-                lum = luminance(rgb_from_palette_index(defaultpx, default_palette))
-                luminances.append(lum)
-    luminances.sort()
+    if(apply_transparency):
+        transparent = default.getpixel((0, 0))
+        for x in range(default.width):
+            for y in range(default.height):
+                if(greyscale.getpixel((x, y)) == 209):
+                    greyscale.putpixel((x, y), 210)
+                if(default.getpixel((x, y)) == transparent):
+                    greyscale.putpixel((x, y), 209)
+            
+    greyscale.save(dajrkpath)
 
-    # Luminances bands
-    q1 = luminances[len(luminances) // 4]
-    q2 = luminances[len(luminances) // 4 * 2]
-    q3 = luminances[len(luminances) // 4 * 3]
-    
-    for x in range(default.width):
-        for y in range(default.height):
-            defaultpx = default.getpixel((x, y))
-            dajrkpx = 0
-            if(apply_transparency and defaultpx == transparency_color):
-                pass
-            else:
-                defaultpx_rgb = rgb_from_palette_index(defaultpx, default_palette)
-                lum = luminance(defaultpx_rgb)
-
-                if(q1 > lum):
-                    dajrkpx = 63
-                elif(q2 > lum):
-                    dajrkpx = 127
-                elif(q3 > lum):
-                    dajrkpx = 191
-                else:
-                    dajrkpx = 255
-            dajrk.putpixel((x, y), dajrkpx)
-
-    dajrk.save(dajrkpath)
+def denoise(path):
+    print('denoising: {}'.format(path))
+    img_t = cv2.imread(path, 0)
+    deno = cv2.fastNlMeansDenoising(img_t, None, 30, 7, 21)
+    img2 = Image.fromarray(deno, mode='P')
+    img2.putpalette(GREYSCALE_PALETTE)
+    img2.save(path + '_dn.bmp')
 
 for img in images:
     dajrk('default/' + img[0], 'dajrk/' + img[0], img[1])
+##    denoise('dajrk/' + img[0])
     
 for cpy in just_copy:
     shutil.copy('default/' + cpy, 'dajrk/' + cpy)

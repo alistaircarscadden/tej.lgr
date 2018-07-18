@@ -97,13 +97,10 @@ def cedj(retropath, edjpath, apply_transparency, cedjpath):
             edjpx = edj.getpixel((x, y))
             retropx = retro.getpixel((x, y))
 
-            if(apply_transparency):
-                if(edjpx == 209):
-                    cedjpx = edjpx
-                elif(edjpx == 255):
-                    cedjpx = 0
-                else:
-                    cedjpx = retropx
+            if(apply_transparency and edjpx == 209):
+                cedjpx = edjpx
+            elif(edjpx == 255):
+                cedjpx = 0
             else:
                 cedjpx = retropx
 
@@ -122,7 +119,7 @@ except FileExistsError:
 
 # Make edge images
 for image in images:
-    cedj('retro/' + image[0], 'edj/' + image[0], image[1], 'cedj/' + image[0])
+    cedj('tejtro/' + image[0], 'edj/' + image[0], image[1], 'cedj/' + image[0])
 
 # Copy masks and .txt
 for copy in just_copy:
