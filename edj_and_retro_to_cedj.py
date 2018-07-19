@@ -29,6 +29,7 @@ def cedj(retropath, edjpath, apply_transparency, cedjpath):
 
 # Make edge images
 for image in paths.images:
+    print('{}{}'.format(paths.cedj_dir, image[0]))
     cedj(paths.tejtro_dir + image[0], paths.edj_dir + image[0], image[1], paths.cedj_dir + image[0])
 
 # Copy masks and .txt

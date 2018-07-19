@@ -1,0 +1,1 @@
+These images show what happens when you take the greyscale tree3.bmp and apply OpenCV Morphological Transformations 'Opening' and 'Closing' in different orders.

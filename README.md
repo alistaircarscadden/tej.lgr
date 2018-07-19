@@ -1,28 +1,32 @@
-Brief description of each .lgr:
+# .Lgr's available #
 
-[blow.lgr](blow.lgr) Don't bother, it's edj with uglier lines.
+## Recommended ##
 
-[cedj.lgr](cedj.lgr) Coloured-edj. Quite pretty, this is my current recommendation.
+[dejtaijl.lgr](LGR/dejtaijl.lgr) Coloured-edj-with-shading. My top recommendation, this is the (unfinished but eventual) "final product".
 
-[dajrk.lgr](dajrk.lgr) <Unsure>
+[cedj.lgr](LGR/cedj.lgr) Coloured-edj. Quite pretty, this is my current recommendation for people who like retro, flat, simple LGRs.
 
-[dejtaijl.lgr](dejtaijl.lgr) Coloured-edj-with-shading. This is the next product, it looks OK but is unfinished. My other recommendation.
+[edj.lgr](LGR/edj.lgr) Black and white, edjes highlighted. Quite cool. Outerspace-matrix-like.
 
-[edj.lgr](edj.lgr) Black and white, edjes highlighted. Quite cool.
+[tejtro.lgr](LGR/tejtro.lgr) My version of retro, character is coloured instead of all black and many colours are changed.
 
-[hween.lgr](hween.lgr) Made by accident, halloween lgr.
+## Not recommended ##
 
-[jej.lgr](jej.lgr) <Thought I deleted this>
+[blow.lgr](LGR/notrecommended/blow.lgr) Old, ugly edj.
 
-[lumi.lgr](lumi.lgr) Quite psychedelic, messing around with palettes.
+[dajrk.lgr](LGR/notrecommended/dajrk.lgr) Very odd, black and white "water colour" feel. Some things are partly invisible. dajrk is used as data in the generation of dejtaijl, so it's not meant to be an LGR.
 
-[psych.lgr](psych.lgr) Quite a bit mroe psychedelic.
+[hween.lgr](LGR/notrecommended/hween.lgr) Made by accident, halloween lgr.
 
-[retrofix.lgr](retrofix.lgr) Retro with suspup fixed.
+[jej.lgr](LGR/notrecommended/jej.lgr) Very early version of cedj, not good.
 
-[silver.lgr](silver.lgr) Luminosity of each pixel converted into a lgr, looks good.
+[lumi.lgr](LGR/notrecommended/lumi.lgr) Quite psychedelic, messing around with palettes.
 
-[tejtro.lgr](tejtro.lgr) My version of retro, character is coloured instead of all black and some colours are changed.
+[psych.lgr](LGR/notrecommended/psych.lgr) Quite a bit mroe psychedelic.
 
-[trjd2.lgr](trjd2.lgr) High-saturation default. Made in photoshop, not scripts, will probably remove.
+[retrofix.lgr](LGR/notrecommended/retrofix.lgr) Retro with 'suspup.bmp' fixed.
+
+[silver.lgr](LGR/notrecommended/silver.lgr) Luminosity of each pixel converted into a lgr, looks good, but palette is greyscale and has a red artifact.
+
+[trjd2.lgr](LGR/notrecommended/trjd2.lgr) High-saturation default. Made in photoshop, not scripts, will probably remove.
 

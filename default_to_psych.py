@@ -76,6 +76,7 @@ def dajrk(defaultpath, dajrkpath, apply_transparency):
     dajrk.save(dajrkpath)
 
 for img in paths.images:
+    print('{}{}'.format(paths.psych_dir, image[0]))
     dajrk(paths.default_dir + img[0], paths.dajrk_dir + img[0], img[1])
     
 for cpy in paths.just_copy:

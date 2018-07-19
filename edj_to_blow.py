@@ -41,6 +41,7 @@ for image in paths.images:
 
 # Make blow images
 for image in paths.images:
+    print('{}{}'.format(paths.blow_dir, image[0]))
     blow(paths.blow_dir + image[0], paths.blow_dir + image[0], image[1])
 
 # Copy masks and .txt

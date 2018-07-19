@@ -93,3 +93,34 @@ just_copy = [
     'masktop.bmp',
     'lgr.txt',
 ]
+
+import os
+def make_elma_dir(path):
+    try:
+        os.mkdir(path)
+    except FileExistsException:
+        pass
+    try:
+        os.mkdir(path + '/QUPDOWN')
+    except FileExistsException:
+        pass
+
+def make_all_dirs():
+    for path in [
+        #blow_dir,
+        cedj_dir,
+        dajrk_dir,
+        #default_dir,
+        dejtaijl_dir,
+        edj_dir,
+        #hween_dir,
+        #lumi_dir,
+        #psych_dir,
+        #retro_dir,
+        #silver_dir,
+        #tejtro_dir
+    ]:
+        make_elma_dir(path)
+
+if(__name__ == '__main__'):
+    make_all_dirs()

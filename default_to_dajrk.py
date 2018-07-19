@@ -39,31 +39,50 @@ GREYSCALE_PALETTE = greyscale_palette()
 def dajrk(defaultpath, dajrkpath, apply_transparency):
     default = Image.open(defaultpath)
     greyscale = default.convert(mode='L')
-    greyscale.putpalette(default.getpalette())
-
-    if(apply_transparency):
-        transparent = default.getpixel((0, 0))
-        for x in range(default.width):
-            for y in range(default.height):
-                if(greyscale.getpixel((x, y)) == 209):
-                    greyscale.putpixel((x, y), 210)
-                if(default.getpixel((x, y)) == transparent):
-                    greyscale.putpixel((x, y), 209)
-            
+    greyscale.putpalette(GREYSCALE_PALETTE)
     greyscale.save(dajrkpath)
 
+def smooth(image, iterations=1):
+    def iteration(it_image):
+        smoothed = it_image.copy()
+
+        def neighbors(r):
+            s = r // 2
+            for i in range(r*r):
+                yield i % r - s, i // r - s
+
+        for x in range(image.width):
+            for y in range(image.height):
+                histogram = [0] * 256
+                for x_off, y_off in neighbors(3):
+                    _x_, _y_ = x + x_off, y + y_off
+                    try: histogram[image.getpixel((_x_, _y_))] += 1
+                    except IndexError: pass
+                smoothed.putpixel((x, y),
+                                  max(enumerate(histogram), key=lambda a: a[1])[0])
+
+        return smoothed
+
+    for i in range(iterations):
+        image = iteration(image)
+
+    return image
+
 def denoise(path):
-    kernel = np.ones((5,5),np.uint8)
+    kernel3 = np.ones((3,3),np.uint8)
+    kernel5 = np.ones((5,5),np.uint8)
     img_t = cv2.imread(path, 0)
-    #deno = cv2.fastNlMeansDenoising(img_t, None, 30, 13, 21)
-    deno = cv2.morphologyEx(img_t, cv2.MORPH_OPEN, kernel)
-    img2 = Image.fromarray(deno, mode='P')
-    img2.putpalette(GREYSCALE_PALETTE)
+    #cv2.fastNlMeansDenoising(img_t, None, 30, 13, 21)
+    deno = cv2.morphologyEx(img_t, cv2.MORPH_OPEN, kernel3)
+    deno2 = cv2.morphologyEx(deno, cv2.MORPH_CLOSE, kernel5)
+    img2 = Image.fromarray(deno2, mode='L')
+    assert(img2 != None)
     return img2
 
-for img in paths.images:
-    dajrk(paths.default_dir + img[0], paths.dajrk_dir + img[0], img[1])
-    denoise(paths.dajrk_dir + img[0]).save(paths.dajrk_dir + img[0])
+for image in paths.images:
+    print('{}{}'.format(paths.dajrk_dir, image[0]))
+    dajrk(paths.default_dir + image[0], paths.dajrk_dir + image[0], image[1])
+    smooth(denoise(paths.dajrk_dir + image[0]), iterations=2).save(paths.dajrk_dir + image[0])
     
 for cpy in paths.just_copy:
     shutil.copy(paths.default_dir + cpy, paths.dajrk_dir + cpy)

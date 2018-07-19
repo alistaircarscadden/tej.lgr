@@ -4,14 +4,44 @@ import shutil
 from PIL import Image
 
 import paths
-edjify = paths.images
 
+# Values are 'n'orth, 'e'ast, 's'outh, 'w'est
 force_border_edges = {
-    'edj/barrel.bmp': ['left', 'right'],
-    'edj/bridge.bmp': ['bottom'],
-    'edj/flag.bmp': ['top'],
-    'edj/secret.bmp': ['top']
-    }
+    'edj/Q1BODY.bmp': 'es',
+    'edj/Q1FORARM.bmp': 'e',
+    'edj/Q1HEAD.bmp': 's',
+    'edj/Q1LEG.bmp': 'new',
+    'edj/Q1SUSP1.bmp': 'nesw',
+    'edj/Q1SUSP2.bmp': 'nesw',
+    'edj/Q1THIGH.bmp': 'nesw',
+    'edj/Q1UP_ARM.bmp': 'new',
+    'edj/Q1WHEEL.bmp': 'nesw',
+    'edj/Q2BODY.bmp': 'es',
+    'edj/Q2FORARM.bmp': 'e',
+    'edj/Q2HEAD.bmp': 's',
+    'edj/Q2LEG.bmp': 'new',
+    'edj/Q2SUSP1.bmp': 'nesw',
+    'edj/Q2SUSP2.bmp': 'nesw',
+    'edj/Q2THIGH.bmp': 'nesw',
+    'edj/Q2UP_ARM.bmp': 'new',
+    'edj/Q2WHEEL.bmp': 'nesw',
+    'edj/QEXIT.bmp': 'ns',
+    'edj/QFLAG.bmp': 'es',
+    'edj/QKILLER.bmp': 'ns',
+    'edj/barrel.bmp': 'ew',
+    'edj/bridge.bmp': 's',
+    'edj/edge.bmp': 'e',
+    'edj/flag.bmp': 'n',
+    'edj/qfood1.bmp': 'ns',
+    'edj/qfood2.bmp': 'ns',
+    'edj/secret.bmp': 'new',
+    'edj/supphred.bmp': 'ns',
+    'edj/support1.bmp': 'n',
+    'edj/suppvred.bmp': 'sw',
+    'edj/suspdown.bmp': 'esw',
+    'edj/suspup.bmp': 'new',
+    'edj/tree4.bmp': 'e'
+}
 
 # Canny recommended values are lowThreshold = x, highThreshold = 3x
 QUPDOWN_thresh = 200
@@ -20,16 +50,17 @@ canny_threshold = {
 
     # Standard
     'edj/bridge.bmp': 20,
-    'edj/barrel.bmp': 50,
+    'edj/barrel.bmp': 80,
     'edj/log1.bmp': 30,
     'edj/ground.bmp': 49,
+    'edj/stone1.bmp': 160,
     'edj/Q1SUSP2.bmp': 30,
     'edj/Q1LEG.bmp': 50,
     'edj/sedge.bmp': 50,
     'edj/support1.bmp': 80,
     'edj/cliff.bmp': 36,
     'edj/secret.bmp': 350,
-    'edj/brick.bmp': 116,
+    'edj/brick.bmp': 128,
 
     # Objects
     #'edj/QEXIT.bmp': 50,
@@ -92,15 +123,15 @@ def edge_from_image(path, topath, apply_transparency):
                     if(any_transparent):
                         edge_image.putpixel((x, y), 255)
 
-    force_borders = force_border_edges[topath] if topath in force_border_edges else []
+    force_borders = force_border_edges[topath] if topath in force_border_edges else ''
     for border in force_borders:
-        if(border == 'left' or border == 'right'):
-            x = 0 if border == 'left' else edge_image.width - 1
+        if(border == 'w' or border == 'e'):
+            x = 0 if border == 'w' else edge_image.width - 1
             for y in range(edge_image.height):
                 if(edge_image.getpixel((x, y)) == 0):
                     edge_image.putpixel((x, y), 255)
-        if(border == 'top' or border == 'bottom'):
-            y = 0 if border == 'top' else edge_image.height - 1
+        if(border == 'n' or border == 's'):
+            y = 0 if border == 'n' else edge_image.height - 1
             for x in range(edge_image.width):
                 if(edge_image.getpixel((x, y)) == 0):
                     edge_image.putpixel((x, y), 255)
@@ -109,7 +140,8 @@ def edge_from_image(path, topath, apply_transparency):
     edge_image.save(topath)
 
 # Make edge images
-for image in paths.edjify:
+for image in paths.images:
+    print('{}{}'.format(paths.edj_dir, image[0]))
     edge_from_image(paths.default_dir + image[0], paths.edj_dir + image[0], image[1])
 
 # Copy masks and .txt

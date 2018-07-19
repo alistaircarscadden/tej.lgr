@@ -7,46 +7,54 @@ from PIL import Image
 
 import paths
 
-def palette_img_from_img(path):
-    p = Image.open(path).getpalette()
-    test = Image.new(mode='P', size=(16, 16))
-    test.putpalette(p)
-    for n in range(256):
-        test.putpixel((n % 16, n // 16), n)
-    return test
+blue_transparency = list(map(lambda s: paths.cedj_dir + s, [
+    'cliff.bmp',
+    'flag.bmp',
+    'log1.bmp',
+    'log2.bmp',
+    'Q2FORARM.bmp',
+    'Q2THIGH.bmp',
+    ]))
+
+shade_amount = {
+    'default': [4, 64],
+    'dejtaijl/stone1.bmp': [1, 256],
+    'dejtaijl/sky.bmp': [1, 0],
+    'dejtaijl/sedge.bmp': [2, 256],
+    'dejtaijl/bridge.bmp': [2, 256],
+    'dejtaijl/tree1.bmp': [2, 256],
+    'dejtaijl/tree2.bmp': [2, 256],
+    'dejtaijl/tree3.bmp': [2, 256],
+    'dejtaijl/tree4.bmp': [2, 256],
+    'dejtaijl/tree5.bmp': [2, 256],
+    }
 
 def change_value(rgb, value):
-    # Adds value to colour's existing value
     col = list(colorsys.rgb_to_hsv(rgb[0] / 256.0, rgb[1] / 256.0, rgb[2] / 256.0))
     col[2] += value / 256.0
-    if(col[2] < 0):
-        col[2] = 0
-    if(col[2] > 1):
-        col[2] = 1
+    if(col[2] < 0): col[2] = 0
+    if(col[2] > 1): col[2] = 1
     col = colorsys.hsv_to_rgb(col[0], col[1], col[2])
     return tuple(map(int, (col[0] * 256.0, col[1] * 256.0, col[2] * 256.0)))
 
-def get_medians(dajrk):
+def get_medians(dajrk, cedj, apply_transparency):
     lumis = []
     for x in range(dajrk.width):
         for y in range(dajrk.height):
-            lumis.append(dajrk.getpixel((x, y)))
+            if(not apply_transparency or cedj.getpixel((x, y)) != 209):
+                lumis.append(dajrk.getpixel((x, y)))
     lumis.sort()
     return {
         'Q1': lumis[len(lumis)//4 * 1],
         'Q2': lumis[len(lumis)//4 * 2],
         'Q3': lumis[len(lumis)//4 * 3]
-    }
+        }
 
-def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath, palette):
-    print(dejtaijlpath)
+def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath):
     _cedj = Image.open(cedjpath)
-    _cedjpal = _cedj.getpalette()
     cedj = _cedj.convert(mode='RGB')
     dajrk = Image.open(dajrkpath)
-
-    medians = get_medians(dajrk)
-
+    medians = get_medians(dajrk, _cedj, apply_transparency)
     dejtaijl = Image.new(mode='RGB', size=(cedj.width, cedj.height))
 
     for x in range(dejtaijl.width):
@@ -54,40 +62,23 @@ def dejtaijl(cedjpath, dajrkpath, apply_transparency, dejtaijlpath, palette):
             dajrkpx = dajrk.getpixel((x, y))
             cedjpx = cedj.getpixel((x, y))
             _cedjpx = _cedj.getpixel((x, y))
-
             px = None
             if(apply_transparency and _cedjpx == 209):
-                px = (255, 166, 32)
+                px = (0, 0, 255) if cedjpath in blue_transparency else (255, 166, 32)
             elif(_cedjpx == 0):
                 px = (0, 0, 0)
-            elif(dajrkpx < medians['Q1']):
-                px = change_value(cedjpx, -32)
-            elif(dajrkpx < medians['Q3']):
-                px = cedjpx
             else:
-                px = change_value(cedjpx, 32)
-
+                divis = shade_amount[dejtaijlpath if dejtaijlpath in shade_amount else 'default'][0]
+                clamp = shade_amount[dejtaijlpath if dejtaijlpath in shade_amount else 'default'][1]
+                value_diff = max(-clamp, min(clamp, dajrkpx-medians['Q2']/divis))
+                px = change_value(cedjpx,  value_diff)
             dejtaijl.putpixel((x, y), px)
-
-#### Originally planned on this conversion to 'P' image using quantize,
-#### however the results were not good. Instead, I am saving the bmps as
-#### RGB and allowing sunl's tool to map to the palette, which does a much
-#### better job.
-##    dejtaijl2 = dejtaijl.quantize(palette=palette)
-##
-##    if(apply_transparency):
-##        for x in range(dejtaijl2.width):
-##            for y in range(dejtaijl2.height):
-##                if(_cedj.getpixel((x, y)) == 209):
-##                    dejtaijl2.putpixel((x, y), 209)
-##    
-##    dejtaijl2.save(dejtaijlpath)
+            
     dejtaijl.save(dejtaijlpath)
 
-palette = palette_img_from_img(paths.cedj_dir + 'sedge.bmp')
-for img in paths.images:
-    dejtaijl(paths.cedj_dir + img[0], paths.dajrk_dir + img[0], img[1], paths.dejtaijl_dir + img[0], palette)
+for image in paths.images:
+    print('{}{}'.format(paths.dejtaijl_dir, image[0]))
+    dejtaijl(paths.cedj_dir + image[0], paths.dajrk_dir + image[0], image[1], paths.dejtaijl_dir + image[0])
 
 for cpy in paths.just_copy:
     shutil.copy(paths.default_dir + cpy, paths.dejtaijl_dir + cpy)
-
